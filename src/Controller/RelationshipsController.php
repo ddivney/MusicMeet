@@ -38,47 +38,72 @@ class RelationshipsController extends AppController
      */
     public function view($id = null)
     {
-        $relationshipsTable = TableRegistry::get('Relationships');
-        $relationship = $relationshipsTable->find('all', [
-            'conditions' => ['user_id1 =' => $id],
-            'contain' => ['Users2']
-        ]) -> select(['uId' => 'Users2.id', 'uName' => 'Users2.name','rStatus' => 'Relationships.status' ]) ;
-         
-        
-        $this->set('userId', $id);
-        $this->set('relationship', $relationship);
-        $this->set('_serialize', ['relationship']);
+        $userid = $this->request->session()->read()['Auth']['User']['id'];
+        if($userid != $id){
+            $this->Flash->error(__('No tiene permiso para ver esta información.'));
+            return $this->redirect(['action' => 'view', $userid]);
+        }
+        else {
+            $relationshipsTable = TableRegistry::get('Relationships');
+            $relationship = $relationshipsTable->find('all', [
+                'conditions' => ['user_id1 =' => $id, 'status >' => 0],
+                'contain' => ['Users2']
+            ]) -> select(['uId' => 'Users2.id', 'uName' => 'Users2.name','rStatus' => 'Relationships.status' ]) ;
+            
+            $this->set('userId', $id);
+            $this->set('relationship', $relationship);
+            $this->set('_serialize', ['relationship']);
+        }
     }
     
-    
+    /**
+     * View method
+     *
+     * @param string|null $id Relationship id.
+     * @return \Cake\Http\Response|void
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
    
-    public function setMatches($userId)
+    public function setMatches($id = null)
     {
-        $userId = $this->Auth->user('id');
-        $usersTable = TableRegistry::get('Users');
-        $query = $usersTable -> find();
-        $possibleMatches = array();//array con ids de otros usuarios
-        foreach ($query as $user) 
-        {
-             if($userId !== $user -> id)
-             {
-                 $pmId = $user -> id;
-                 $score = $this -> setMatchScore($userId, $pmId);
-                 $possibleMatches[] = new Match($user, $score);
-             }
+        $userId = $this->request->session()->read()['Auth']['User']['id'];
+        if ($id != $userId){
+            $this->Flash->error(__('No tiene permiso para ver esta información.'));
+            return $this->redirect(['action' => 'set-matches', $userId]);  
         }
-        
-        usort($possibleMatches, 'App\Utility\Match::cmp'); //Se ordena descendentemente
-        
-        $this->set('possibleMatches', $possibleMatches);
-        $this->set('userId', $userId );
-       // foreach($possibleMatches as $match)
-       // {
-       //     echo $match -> user -> id;
-       //     echo " ";
-       //     echo $match -> score;
-       //     echo "<br>";
-       // }
+            else {
+            $usersTable = TableRegistry::get('Users');
+            $query = $usersTable -> find('all', []);
+            $people = $this->Relationships->find('all', [
+                'conditions' => ['user_id1 =' => $userId, 'status =' => 0]
+                ]);
+            $peopleIDs = array();
+            foreach ($people as $person){
+                $peopleIDs[] = $person['user_id2'];
+            }
+            $possibleMatches = array();//array con ids de otros usuarios
+            foreach ($query as $user) 
+            {
+                 if($userId !== $user -> id && !in_array($user->id, $peopleIDs))
+                 {
+                     $pmId = $user -> id;
+                     $score = $this -> setMatchScore($userId, $pmId);
+                     $possibleMatches[] = new Match($user, $score);
+                 }
+            }
+            
+            usort($possibleMatches, 'App\Utility\Match::cmp'); //Se ordena descendentemente
+            
+            $this->set('possibleMatches', $possibleMatches);
+            $this->set('userId', $userId );
+           // foreach($possibleMatches as $match)
+           // {
+           //     echo $match -> user -> id;
+           //     echo " ";
+           //     echo $match -> score;
+           //     echo "<br>";
+           // }
+            }
     }
     
     private function setMatchScore($userId, $pmId)
@@ -224,9 +249,27 @@ class RelationshipsController extends AppController
     {
         $this->autoRender = false;
         $relationshipsTable = TableRegistry::get('Relationships');
-        $relation = $relationshipsTable->get( array($id1, $id2)); 
-        $relation -> status = 1;
-        $relationshipsTable -> save($relation);
+        $relation1 = $relationshipsTable->get( array($id1, $id2)); 
+        $relation1 -> status = 1;
+        $relation2 = $relationshipsTable->get( array($id2, $id1)); 
+        $relation2 -> status = 1;
+        $relationshipsTable -> save($relation1);
+        $relationshipsTable -> save($relation2);
+
+        return $this->redirect(['action' => 'view', $this->Auth->user('id')]);
+    }
+    
+    
+    public function rejectRequest($id1, $id2)
+    {
+        $this->autoRender = false;
+        $relationshipsTable = TableRegistry::get('Relationships');
+        $relation1 = $relationshipsTable->get( array($id1, $id2)); 
+        $relation1 -> status = 0;
+        $relationshipsTable -> save($relation1);
+        $relation2 = $relationshipsTable->get( array($id2, $id1)); 
+        $relation2 -> status = 0;
+        $relationshipsTable -> save($relation2);
         return $this->redirect(['action' => 'view', $this->Auth->user('id')]);
     }
 

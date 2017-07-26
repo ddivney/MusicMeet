@@ -24,7 +24,8 @@
             <td><?= h($user->cellphone) ?></td>
         </tr>
     </table>
-   
+    <?= $this->Html->link(__('Solicitar amistad'), ['controller' => 'relationships', 'action' => 'sendRequest', $ownId, $user -> id],  array( 'class' => ['button', 'right'])) ?>
+
     </br>
     <div  class="view songpreferences large-9 medium-8 columns content">
     <table>
@@ -52,7 +53,6 @@
         </ul>
         <p><?= $this->Paginator->counter(['format' => __('Página {{page}} de {{pages}}, mostrando {{current}} registro(s) de un total de {{count}}')]) ?></p>
     </div>
-    <?= $this->Html->link(__('Solicitar amistad'), ['controller' => 'relationships', 'action' => 'sendRequest', $ownId, $user -> id],  array( 'class' => 'button')) ?>
     </div>
     
     

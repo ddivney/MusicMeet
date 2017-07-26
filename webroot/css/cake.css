@@ -34,7 +34,7 @@ header .header-title {
 }
 
 legend {
-    color:#004d1c;
+    color:##18314f;
 }
 
 .row {
@@ -389,6 +389,7 @@ fieldset {
 }
 
 fieldset legend {
+    background-color:#fafaff;
     border-bottom: 2px solid #070707;
     width: 100%;
     line-height: 2rem;
@@ -401,16 +402,16 @@ fieldset legend {
 }
 
 .form button:hover, .form button:focus {
-    background: #BE840B;
+    background: #18314F;
     box-shadow: none;
 }
 
 button {
-    background: #966600;
+    background: #577399;
 }
 
 button.preferenceAction {
-    background: #BE840B;
+    background: #18314F;
 }
 
 div.message {

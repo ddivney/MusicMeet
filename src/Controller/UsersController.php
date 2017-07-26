@@ -376,18 +376,5 @@ class UsersController extends AppController
     {
         return $this->redirect($this->Auth->logout());
     }
-    
-   public function isAuthorized($user){
-   //     if ($this->request->getParam('action') === 'add') {
-   //         return true;
-   //     }
-   //     
-   //     if (in_array($this->request->getParam('action'), ['edit', 'delete', 'view'])) {
-   //         $this->log($user, 'debug');
-   //         $userid = (int)$this->request->getParam('pass.0');
-   //         if ($userid == $user['id']) {
-   //            return true;
-   //         }
-   //     }
-    }
+
 }

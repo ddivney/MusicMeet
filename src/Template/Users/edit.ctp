@@ -16,7 +16,6 @@
         <legend><?= __('Editar detalles de su cuenta') ?></legend>
         <?php
             echo $this->Form->control('name', ['label'=>'Nombre']);
-            echo $this->Form->control('username', ['label'=>'Correo']);
             echo $this->Form->control('location', ['label'=>'Ubicación']);
             echo $this->Form->control('cellphone', ['label'=>'Teléfono']);
         ?>
